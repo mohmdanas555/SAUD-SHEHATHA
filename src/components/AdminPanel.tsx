@@ -51,7 +51,8 @@ export default function AdminPanel() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') {
+    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+    if (password === adminPassword) {
       setIsAuthenticated(true);
       localStorage.setItem('adminAuth', 'true');
     } else {
