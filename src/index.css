@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto Condensed", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  
+  --color-brand-gold: #C5A059;
+  --color-brand-dark: #0A0A0A;
+  --color-brand-light: #F5F5F0;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-dark text-brand-light font-sans antialiased;
+    background-image: linear-gradient(to bottom, rgba(10, 10, 10, 0.7), rgba(10, 10, 10, 0.7)), url('/construction-bg.jpg');
+    background-size: 800px;
+    background-repeat: repeat;
+    background-attachment: fixed;
+    background-position: top left;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .bg-blueprint {
+    background-image: linear-gradient(to bottom, rgba(10, 10, 10, 0.6), rgba(10, 10, 10, 0.7)), url('/construction-bg.jpg');
+    background-size: 800px;
+    background-repeat: repeat;
+    background-position: top left;
+  }
+}
