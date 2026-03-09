@@ -101,7 +101,6 @@ export default function Footer({ settings, companies }: { settings?: any; compan
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">
           <p>© 2026 {companyName}. All rights reserved.</p>
           <div className="flex gap-8">
-            <Link href="/admin" className="hover:text-brand-gold transition-colors">Admin Panel</Link>
             <Link href="#" className="hover:text-brand-gold transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-brand-gold transition-colors">Terms of Service</Link>
           </div>

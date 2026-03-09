@@ -2,15 +2,14 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from '../lib/gsap';
 
-const stats = [
-  { value: 15, suffix: '+', label: 'Years of Legacy' },
-  { value: 250, suffix: '+', label: 'Completed Developments' },
-  { value: 12, suffix: 'M+', label: 'Sq. Ft. Developed' },
-  { value: 100, suffix: '%', label: 'Safety Record' },
-];
-
-export default function Stats() {
+export default function Stats({ data }: { data?: any[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stats = data || [
+    { value: 15, suffix: '+', label: 'Years of Legacy' },
+    { value: 250, suffix: '+', label: 'Completed Developments' },
+    { value: 12, suffix: 'M+', label: 'Sq. Ft. Developed' },
+    { value: 100, suffix: '%', label: 'Safety Record' },
+  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {

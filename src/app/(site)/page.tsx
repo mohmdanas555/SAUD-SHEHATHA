@@ -21,10 +21,18 @@ export default async function Home() {
   const heroHeadline = content.find((c: any) => c.id === 'hero_headline')?.value;
   const heroDescription = content.find((c: any) => c.id === 'hero_description')?.value;
 
+  const getStat = (id: string) => content.find((c: any) => c.id === id)?.value || '';
+  const statsData = [
+    { value: Number(getStat('stats_1_value')) || 15, suffix: getStat('stats_1_suffix') || '+', label: getStat('stats_1_label') || 'Years of Legacy' },
+    { value: Number(getStat('stats_2_value')) || 250, suffix: getStat('stats_2_suffix') || '+', label: getStat('stats_2_label') || 'Completed Developments' },
+    { value: Number(getStat('stats_3_value')) || 12, suffix: getStat('stats_3_suffix') || 'M+', label: getStat('stats_3_label') || 'Sq. Ft. Developed' },
+    { value: Number(getStat('stats_4_value')) || 100, suffix: getStat('stats_4_suffix') || '%', label: getStat('stats_4_label') || 'Safety Record' },
+  ];
+
   return (
     <>
       <Hero headline={heroHeadline || ''} description={heroDescription || ''} />
-      <Stats />
+      <Stats data={statsData} />
       <About />
       <Projects projects={(projects || []).slice(0, 4)} />
       <Blog posts={(blog_posts || []).slice(0, 6)} />

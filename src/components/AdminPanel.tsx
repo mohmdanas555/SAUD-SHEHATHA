@@ -718,6 +718,20 @@ export default function AdminPanel() {
                       { id: 'about_page_headline', label: 'Section Header', type: 'input' },
                       { id: 'about_page_description', label: 'Full Biography / Description', type: 'textarea', rows: 8 },
                     ]},
+                    { title: 'Home Stats', fields: [
+                      { id: 'stats_1_value', label: 'Stat 1 Value', type: 'input' },
+                      { id: 'stats_1_suffix', label: 'Stat 1 Suffix', type: 'input' },
+                      { id: 'stats_1_label', label: 'Stat 1 Label', type: 'input' },
+                      { id: 'stats_2_value', label: 'Stat 2 Value', type: 'input' },
+                      { id: 'stats_2_suffix', label: 'Stat 2 Suffix', type: 'input' },
+                      { id: 'stats_2_label', label: 'Stat 2 Label', type: 'input' },
+                      { id: 'stats_3_value', label: 'Stat 3 Value', type: 'input' },
+                      { id: 'stats_3_suffix', label: 'Stat 3 Suffix', type: 'input' },
+                      { id: 'stats_3_label', label: 'Stat 3 Label', type: 'input' },
+                      { id: 'stats_4_value', label: 'Stat 4 Value', type: 'input' },
+                      { id: 'stats_4_suffix', label: 'Stat 4 Suffix', type: 'input' },
+                      { id: 'stats_4_label', label: 'Stat 4 Label', type: 'input' },
+                    ]},
                   ].map(section => (
                     <div key={section.title} className="bg-[#111] p-7 rounded-2xl border border-white/5">
                       <h3 className="text-xl font-serif font-bold text-brand-gold border-b border-white/5 pb-4 mb-6">{section.title}</h3>
