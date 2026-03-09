@@ -13,9 +13,12 @@ const navLinks = [
   { name: 'Contact', href: '/contact' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ settings }: { settings?: any }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const companyName = settings?.name || 'SAUD SHEHATHA';
+  const logoUrl = settings?.logo || '';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,13 +36,19 @@ export default function Navbar() {
       )}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex flex-col group">
-          <span className="text-2xl font-serif font-bold tracking-tighter text-brand-gold group-hover:text-white transition-colors">
-            SAUD SHEHATHA
-          </span>
-          <span className="text-[10px] uppercase tracking-[0.3em] font-sans opacity-60 -mt-1 group-hover:opacity-100 transition-opacity">
-            Construction
-          </span>
+        <Link href="/" className="flex items-center gap-4 group">
+          {logoUrl ? (
+            <img src={logoUrl} alt={companyName} className="h-10 md:h-12 w-auto object-contain" />
+          ) : (
+            <div className="flex flex-col">
+              <span className="text-2xl font-serif font-bold tracking-tighter text-brand-gold group-hover:text-white transition-colors">
+                {companyName}
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-sans opacity-60 -mt-1 group-hover:opacity-100 transition-opacity">
+                Construction
+              </span>
+            </div>
+          )}
         </Link>
 
         {/* Desktop Nav */}
@@ -91,12 +100,14 @@ export default function Navbar() {
               <div className="flex flex-col gap-4 text-sm opacity-70">
                 <div className="flex items-center gap-3">
                   <Phone size={16} className="text-brand-gold" />
-                  <span>0527267426</span>
+                  <span>{settings?.phone || '0527267426'}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <MapPin size={16} className="text-brand-gold" />
-                  <span>Dubai, UAE</span>
-                </div>
+                {settings?.address && (
+                  <div className="flex items-center gap-3">
+                    <MapPin size={16} className="text-brand-gold" />
+                    <span>{settings.address}</span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

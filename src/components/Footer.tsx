@@ -3,28 +3,45 @@ import React from 'react';
 import { Instagram, Linkedin, Twitter, Facebook } from 'lucide-react';
 import Link from 'next/link';
 
-export default function Footer() {
+export default function Footer({ settings }: { settings?: any }) {
+  const companyName = settings?.name || 'SAUD SHEHATHA';
+  const logoUrl = settings?.logo || '';
+
+  const socialLinks = [
+    { id: 'social_linkedin', icon: Linkedin, href: settings?.socials?.linkedin || '#' },
+    { id: 'social_instagram', icon: Instagram, href: settings?.socials?.instagram || '#' },
+    { id: 'social_twitter', icon: Twitter, href: settings?.socials?.twitter || '#' },
+  ];
+
   return (
     <footer className="bg-brand-dark pt-32 pb-12 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
           <div className="lg:col-span-1">
             <div className="flex flex-col mb-8">
-              <span className="text-2xl font-serif font-bold tracking-tighter text-brand-gold">
-                SAUD SHEHATHA
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.3em] font-sans opacity-60 -mt-1">
-                Construction
-              </span>
+              {logoUrl ? (
+                <img src={logoUrl} alt={companyName} className="h-10 md:h-12 w-auto object-contain self-start" />
+              ) : (
+                <div className="flex flex-col">
+                  <span className="text-2xl font-serif font-bold tracking-tighter text-brand-gold">
+                    {companyName}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-sans opacity-60 -mt-1">
+                    Construction
+                  </span>
+                </div>
+              )}
             </div>
             <p className="text-brand-light/50 text-sm leading-relaxed mb-8 max-w-xs">
               Building excellence across the region for over 15 years. We specialize in luxury residential, commercial, and industrial infrastructure.
             </p>
             <div className="flex gap-4">
-              {[Instagram, Linkedin, Twitter, Facebook].map((Icon, i) => (
+              {socialLinks.map(({ icon: Icon, href }, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-brand-gold hover:text-brand-dark transition-all"
                 >
                   <Icon size={18} />
@@ -74,7 +91,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">
-          <p>© 2026 Saud Shehatha Construction. All rights reserved.</p>
+          <p>© 2026 {companyName}. All rights reserved.</p>
           <div className="flex gap-8">
             <Link href="/admin" className="hover:text-brand-gold transition-colors">Admin Panel</Link>
             <Link href="#" className="hover:text-brand-gold transition-colors">Privacy Policy</Link>
