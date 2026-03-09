@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import '../index.css'
 import SmoothScroll from '../components/SmoothScroll'
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   const { data: nameData } = await supabase.from('settings').select('value').eq('id', 'company_name').single();
   const { data: faviconData } = await supabase.from('settings').select('value').eq('id', 'company_favicon_url').single();
@@ -34,6 +36,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href={faviconUrl} />
+        <link rel="shortcut icon" href={faviconUrl} />
+        <link rel="apple-touch-icon" href={faviconUrl} />
+      </head>
       <body className="bg-brand-dark overflow-x-hidden text-brand-light font-sans antialiased">
         <SmoothScroll />
         {children}

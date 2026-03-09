@@ -3,6 +3,8 @@ import Navbar from '@/src/components/Navbar';
 import Footer from '@/src/components/Footer';
 import CustomCursor from '@/src/components/CustomCursor';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SiteLayout({
   children,
 }: {
@@ -28,6 +30,9 @@ export default async function SiteLayout({
     }
   };
 
+  const { data: companiesData } = await supabase.from('companies').select('name, slug').order('name', { ascending: true }) || { data: [] };
+  const companies = companiesData || [];
+
   return (
     <>
       <CustomCursor />
@@ -35,7 +40,7 @@ export default async function SiteLayout({
       <main>
         {children}
       </main>
-      <Footer settings={siteSettings} />
+      <Footer settings={siteSettings} companies={companies} />
     </>
   )
 }

@@ -3,7 +3,7 @@ import React from 'react';
 import { Instagram, Linkedin, Twitter, Facebook } from 'lucide-react';
 import Link from 'next/link';
 
-export default function Footer({ settings }: { settings?: any }) {
+export default function Footer({ settings, companies }: { settings?: any; companies?: any[] }) {
   const companyName = settings?.name || 'SAUD SHEHATHA';
   const logoUrl = settings?.logo || '';
 
@@ -81,11 +81,19 @@ export default function Footer({ settings }: { settings?: any }) {
           <div>
             <h4 className="text-lg font-serif font-bold mb-8">Related Companies</h4>
             <ul className="space-y-4 text-sm text-brand-light/50">
-              {['Royal Arrow', 'Royal Wooden'].map((item) => (
-                <li key={item}>
-                  <Link href="#" className="hover:text-brand-gold transition-colors">{item}</Link>
-                </li>
-              ))}
+              {companies && companies.length > 0 ? (
+                companies.map((item) => (
+                  <li key={item.slug}>
+                    <Link href={`/companies/${item.slug}`} className="hover:text-brand-gold transition-colors">{item.name}</Link>
+                  </li>
+                ))
+              ) : (
+                ['Royal Arrow', 'Royal Wooden'].map((item) => (
+                  <li key={item}>
+                    <Link href="#" className="hover:text-brand-gold transition-colors">{item}</Link>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
         </div>

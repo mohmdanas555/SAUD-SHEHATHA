@@ -6,6 +6,8 @@ import Projects from '@/src/components/Projects';
 import Blog from '@/src/components/Blog';
 import Contact from '@/src/components/Contact';
 
+export const dynamic = 'force-dynamic';
+
 // Note: Ensure the tables are created in Supabase first via the provided SQL file!
 export default async function Home() {
   const { data: contentData } = await supabase.from('content').select('*') || { data: [] };
@@ -25,7 +27,7 @@ export default async function Home() {
       <Stats />
       <About />
       <Projects projects={(projects || []).slice(0, 4)} />
-      <Blog posts={(blog_posts || []).slice(0, 3)} />
+      <Blog posts={(blog_posts || []).slice(0, 6)} />
       <Contact />
     </>
   );

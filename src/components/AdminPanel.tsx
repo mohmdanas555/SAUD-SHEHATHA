@@ -24,7 +24,13 @@ type BlogPost = {
   created_at?: string;
 };
 
-type TabType = 'dashboard' | 'pages' | 'projects' | 'blog' | 'settings';
+type Company = {
+  id: string; name: string; slug: string; subtitle: string; description: string;
+  image: string; mission: string; vision: string; services: string[];
+  contact_email: string; contact_phone: string;
+};
+
+type TabType = 'dashboard' | 'pages' | 'projects' | 'blog' | 'companies' | 'settings';
 
 const MODAL_INPUT = "w-full bg-black/50 border border-white/10 p-3 rounded-xl text-white focus:border-brand-gold outline-none text-sm";
 const MODAL_LABEL = "text-[10px] uppercase tracking-[0.2em] opacity-50 font-bold";
@@ -33,7 +39,13 @@ export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-  const [data, setData] = useState<{ content: any[]; projects: Project[]; blog_posts: BlogPost[]; settings: any[] }>({ content: [], projects: [], blog_posts: [], settings: [] });
+  const [data, setData] = useState<{ 
+    content: any[]; 
+    projects: Project[]; 
+    blog_posts: BlogPost[]; 
+    companies: Company[];
+    settings: any[] 
+  }>({ content: [], projects: [], blog_posts: [], companies: [], settings: [] });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -41,6 +53,7 @@ export default function AdminPanel() {
   // Modal state
   const [projectModal, setProjectModal] = useState<{ open: boolean; mode: 'add' | 'edit'; data?: Project }>({ open: false, mode: 'add' });
   const [blogModal, setBlogModal] = useState<{ open: boolean; mode: 'add' | 'edit'; data?: BlogPost }>({ open: false, mode: 'add' });
+  const [companyModal, setCompanyModal] = useState<{ open: boolean; mode: 'add' | 'edit'; data?: Company }>({ open: false, mode: 'add' });
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   useEffect(() => {
@@ -68,16 +81,18 @@ export default function AdminPanel() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contentRes, projectsRes, blogRes, settingsRes] = await Promise.all([
+      const [contentRes, projectsRes, blogRes, companiesRes, settingsRes] = await Promise.all([
         supabase.from('content').select('*'),
         supabase.from('projects').select('*').order('created_at', { ascending: false }),
         supabase.from('blog_posts').select('*').order('created_at', { ascending: false }),
+        supabase.from('companies').select('*').order('name', { ascending: true }),
         supabase.from('settings').select('*'),
       ]);
       setData({
         content: contentRes.data || [],
         projects: projectsRes.data || [],
         blog_posts: blogRes.data || [],
+        companies: companiesRes.data || [],
         settings: settingsRes.data || [],
       });
     } catch (err) {
@@ -179,20 +194,70 @@ export default function AdminPanel() {
     };
     if (imageUrl) payload.image = imageUrl;
 
-    if (blogModal.mode === 'edit' && blogModal.data?.id) {
-      await supabase.from('blog_posts').update(payload).eq('id', blogModal.data.id);
-    } else {
-      if (!payload.image) return alert('Please provide an image.');
-      await supabase.from('blog_posts').insert([payload]);
-    }
+    try {
+      if (blogModal.mode === 'edit' && blogModal.data?.id) {
+        const { error } = await supabase.from('blog_posts').update(payload).eq('id', blogModal.data.id);
+        if (error) throw error;
+      } else {
+        if (!payload.image) return alert('Please provide an image.');
+        const { error } = await supabase.from('blog_posts').insert([payload]);
+        if (error) throw error;
+      }
 
-    setBlogModal({ open: false, mode: 'add' });
-    fetchData();
+      setBlogModal({ open: false, mode: 'add' });
+      fetchData();
+      alert('Journal post saved successfully!');
+    } catch (err: any) {
+      alert('Error saving post: ' + err.message);
+    }
   };
 
   const deleteBlog = async (id: string) => {
     if (!confirm('Delete this post permanently?')) return;
     await supabase.from('blog_posts').delete().eq('id', id);
+    fetchData();
+  };
+
+  // ── COMPANY OPERATIONS ──────────────────────────────────────
+  const saveCompany = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const imageUrl = await resolveImageUrl(fd);
+
+    const payload: Partial<Company> = {
+      name: fd.get('name') as string,
+      slug: fd.get('slug') as string,
+      subtitle: fd.get('subtitle') as string,
+      description: fd.get('description') as string,
+      mission: fd.get('mission') as string,
+      vision: fd.get('vision') as string,
+      contact_email: fd.get('contact_email') as string,
+      contact_phone: fd.get('contact_phone') as string,
+      services: (fd.get('services') as string).split(',').map(s => s.trim()).filter(s => s),
+    };
+    if (imageUrl) payload.image = imageUrl;
+
+    try {
+      if (companyModal.mode === 'edit' && companyModal.data?.id) {
+        const { error } = await supabase.from('companies').update(payload).eq('id', companyModal.data.id);
+        if (error) throw error;
+      } else {
+        if (!payload.image) return alert('Please provide an image.');
+        const { error } = await supabase.from('companies').insert([payload]);
+        if (error) throw error;
+      }
+
+      setCompanyModal({ open: false, mode: 'add' });
+      fetchData();
+      alert('Company details saved successfully!');
+    } catch (err: any) {
+      alert('Error saving company: ' + err.message);
+    }
+  };
+
+  const deleteCompany = async (id: string) => {
+    if (!confirm('Permanently remove this company from the group?')) return;
+    await supabase.from('companies').delete().eq('id', id);
     fetchData();
   };
 
@@ -275,6 +340,7 @@ export default function AdminPanel() {
     { id: 'pages', label: 'Page Content', icon: FileText },
     { id: 'projects', label: 'Portfolio', icon: Briefcase },
     { id: 'blog', label: 'Journal', icon: Globe },
+    { id: 'companies', label: 'Companies', icon: Building2 },
     { id: 'settings', label: 'Site Settings', icon: Settings },
   ];
 
@@ -370,6 +436,86 @@ export default function AdminPanel() {
     );
   };
 
+  // ── COMPANY MODAL ──────────────────────────────────────────
+  const CompanyModal = () => {
+    const c = companyModal.data;
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start justify-center p-4 overflow-y-auto">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+          className="bg-[#111] p-8 rounded-2xl border border-white/5 w-full max-w-3xl my-8 relative">
+          <button onClick={() => setCompanyModal({ open: false, mode: 'add' })} className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
+            <X size={22} />
+          </button>
+          <div className="flex items-center gap-3 border-b border-white/5 pb-5 mb-7 pr-10">
+            <div className="p-2 bg-brand-gold/10 rounded-lg"><Building2 size={18} className="text-brand-gold" /></div>
+            <div>
+              <h3 className="text-lg font-serif font-bold text-white uppercase tracking-tighter">{companyModal.mode === 'edit' ? 'Edit Subsidiary' : 'Add New Subsidiary'}</h3>
+              <p className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">Sister company profile</p>
+            </div>
+          </div>
+          <form onSubmit={saveCompany} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1">
+                 <label className={MODAL_LABEL}>Company Name</label>
+                 <input name="name" defaultValue={c?.name} className={MODAL_INPUT} required />
+               </div>
+               <div className="space-y-1">
+                 <label className={MODAL_LABEL}>URL Slug (unique)</label>
+                 <input name="slug" defaultValue={c?.slug} placeholder="royal-arrow" className={MODAL_INPUT} required />
+               </div>
+            </div>
+            <div className="space-y-1">
+              <label className={MODAL_LABEL}>Tagline / Subtitle</label>
+              <input name="subtitle" defaultValue={c?.subtitle} placeholder="Premier Glass Solutions..." className={MODAL_INPUT} required />
+            </div>
+            <div className="space-y-1">
+              <label className={MODAL_LABEL}>Brief Description</label>
+              <textarea name="description" defaultValue={c?.description} rows={3} className={MODAL_INPUT + ' resize-none'} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1">
+                 <label className={MODAL_LABEL}>Mission Statement</label>
+                 <textarea name="mission" defaultValue={c?.mission} rows={2} className={MODAL_INPUT + ' resize-none'} />
+               </div>
+               <div className="space-y-1">
+                 <label className={MODAL_LABEL}>Vision Statement</label>
+                 <textarea name="vision" defaultValue={c?.vision} rows={2} className={MODAL_INPUT + ' resize-none'} />
+               </div>
+            </div>
+            <div className="space-y-1">
+              <label className={MODAL_LABEL}>Services (comma separated)</label>
+              <input name="services" defaultValue={c?.services?.join(', ')} placeholder="Glazing, Cladding, Design" className={MODAL_INPUT} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1">
+                 <label className={MODAL_LABEL}>Contact Email</label>
+                 <input name="contact_email" defaultValue={c?.contact_email} type="email" className={MODAL_INPUT} />
+               </div>
+               <div className="space-y-1">
+                 <label className={MODAL_LABEL}>Contact Phone</label>
+                 <input name="contact_phone" defaultValue={c?.contact_phone} className={MODAL_INPUT} />
+               </div>
+            </div>
+            <div className="space-y-3 border border-white/5 bg-white/[0.02] p-5 rounded-xl">
+              <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-gold flex items-center gap-2"><ImageIcon size={12}/> Profile / Hero Image</label>
+              <input type="file" name="imageFile" accept="image/*" className="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-brand-gold/10 file:text-brand-gold hover:file:bg-brand-gold/20" />
+              <div className="flex items-center gap-3 opacity-30 text-[10px] uppercase tracking-widest"><div className="h-px bg-white flex-1"/> OR URL <div className="h-px bg-white flex-1"/></div>
+              <input name="imageUrl" defaultValue={c?.image} placeholder="https://..." className={MODAL_INPUT} />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={() => setCompanyModal({ open: false, mode: 'add' })} className="flex-1 border border-white/10 text-white/50 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all">
+                Cancel
+              </button>
+              <button type="submit" disabled={uploading} className="flex-1 bg-brand-gold text-black py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                {uploading ? 'Updating...' : companyModal.mode === 'edit' ? 'Update Subsidiary' : 'Add to Group'} <Save size={14} />
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    );
+  };
+
   // ── BLOG MODAL ────────────────────────────────────────────────
   const BlogModal = () => {
     const b = blogModal.data;
@@ -439,6 +585,7 @@ export default function AdminPanel() {
     <div className="min-h-screen flex bg-[#050505] text-brand-light font-sans">
       {projectModal.open && <ProjectModal />}
       {blogModal.open && <BlogModal />}
+      {companyModal.open && <CompanyModal />}
 
       {/* Sidebar */}
       <motion.aside
@@ -515,7 +662,7 @@ export default function AdminPanel() {
                     {[
                       { icon: Briefcase, label: 'Projects', value: data.projects.length },
                       { icon: FileText, label: 'Articles', value: data.blog_posts.length },
-                      { icon: Globe, label: 'Content Nodes', value: data.content.length },
+                      { icon: Building2, label: 'Companies', value: data.companies.length },
                       { icon: Settings, label: 'Settings', value: data.settings.length },
                     ].map((stat, i) => (
                       <div key={i} className="bg-[#111] p-6 rounded-2xl border border-white/5">
@@ -668,6 +815,40 @@ export default function AdminPanel() {
                               <Edit size={10}/> Edit
                             </button>
                             <button onClick={() => deleteBlog(b.id)} className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-colors">
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── COMPANIES ── */}
+              {activeTab === 'companies' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between bg-[#111] p-5 rounded-2xl border border-white/5">
+                    <div>
+                      <h3 className="text-xl font-serif font-bold text-white uppercase tracking-tighter">Related companies</h3>
+                      <p className="text-[10px] text-brand-light/40 mt-1 uppercase tracking-widest">{data.companies.length} subsidiaries in the group</p>
+                    </div>
+                    <button onClick={() => setCompanyModal({ open: true, mode: 'add' })} className="bg-brand-gold text-black px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg">
+                      <Plus size={14} /> Add Company
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {data.companies.map(c => (
+                      <div key={c.id} className="group bg-[#111] p-5 rounded-2xl border border-white/5 hover:border-brand-gold/30 transition-all flex gap-4">
+                        <img src={c.image} className="w-24 h-24 rounded-xl object-cover shrink-0 border border-white/5" alt="" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-serif font-bold text-white text-base line-clamp-1 leading-tight group-hover:text-brand-gold transition-colors mb-1 uppercase tracking-tighter">{c.name}</p>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest mb-4 line-clamp-1">{c.subtitle}</p>
+                          <div className="flex gap-2">
+                            <button onClick={() => setCompanyModal({ open: true, mode: 'edit', data: c })} className="flex-1 bg-white/5 hover:bg-brand-gold/10 hover:text-brand-gold text-white/50 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1">
+                              <Edit size={10}/> Manage
+                            </button>
+                            <button onClick={() => deleteCompany(c.id)} className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-colors">
                               <Trash2 size={12} />
                             </button>
                           </div>
